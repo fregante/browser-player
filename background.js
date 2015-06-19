@@ -1,22 +1,21 @@
 // alert('background loaded')
 var playingTabs = {};
-function stopAll () {
+function doActionToAllTabs (action) {
 	for(var tabId in playingTabs) {
 		chrome.tabs.sendMessage(playingTabs[tabId].id, {
-			action: 'pause'
+			action: action
 		});
 	}
 }
+function pauseAll () {
+	doActionToAllTabs('pause');
+}
 function resumeAll () {
-	for(var tabId in playingTabs) {
-		chrome.tabs.sendMessage(playingTabs[tabId].id, {
-			action: 'resume'
-		});
-	}
+	doActionToAllTabs('resume');
 }
 function thisTabIsPlaying (id, tab) {
 	delete playingTabs[id];
-	stopAll();
+	pauseAll();
 	playingTabs[id] = tab;
 }
 function thisTabHasBeenPaused (id) {
@@ -34,11 +33,10 @@ tabEvents.pause = function someTabHasBeenPaused (request, sender) {
 	thisTabHasBeenPaused(sender.tab.id);
 };
 chrome.runtime.onMessage.addListener(function (request, sender) {
-	if(request && request.action && tabEvents[request.action]) {
-		// console.log('Got event:', request.action);
-		tabEvents[request.action](request, sender);
+	if(request && request.event && tabEvents[request.event]) {
+		// console.log('Got event:', request.event);
+		tabEvents[request.event](request, sender);
 		// console.log('playingTabs:', playingTabs);
 	}
 });
-
 chrome.tabs.onRemoved.addListener(thisTabHasBeenPaused);

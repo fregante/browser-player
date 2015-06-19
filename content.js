@@ -1,4 +1,4 @@
-console.log('player ready');
+// console.log('player ready');
 
 function off (el, name, cb) {
 	el.removeEventListener(name, cb, true);// @warn: true = capturing!!
@@ -37,14 +37,14 @@ function deleteAllProperties (elements, property) {
 
 function somethingIsPlaying (media) {
 	if(isAnyElements(playingElements, '_______wasPaused')) {
-		console.info('some were paused, now the page is fresh')
+		// console.info('some were paused, now the page is fresh')
 		deleteAllProperties(playingElements, '_______wasPaused');
 		playingElements.length = 0;
 	}
 	if (!playingElements.length) {
-		console.log('page is playing');
+		// console.log('page is playing');
 		chrome.extension.sendMessage({
-			action: 'play',
+			event: 'play',
 		});
 	}
 
@@ -55,8 +55,8 @@ function somethingIsPlaying (media) {
 		playingElements.push(media);
 	}
 }
-function somethingHasStoppedPlaying (media) {
-	console.log(playingElements);
+function somethingHasBeenPaused (media) {
+	// console.log(playingElements);
 
 	var index = playingElements.indexOf(media);
 	if (index > -1) {
@@ -64,9 +64,9 @@ function somethingHasStoppedPlaying (media) {
 	}
 
 	if (!playingElements.length) {
-		console.log('page is not playing')
+		// console.log('page is not playing')
 		chrome.extension.sendMessage({
-			action: 'pause',
+			event: 'pause',
 		});
 	}
 }
@@ -77,7 +77,7 @@ window.addEventListener('play', function (e) {
 		delete e.target.____automatedEvent;
 		return;
 	}
-	console.log('user played', e.target);
+	// console.log('user played', e.target);
 
 	somethingIsPlaying(e.target);
 }, true);
@@ -87,8 +87,8 @@ window.addEventListener('pause', function (e) {
 		return;
 	}
 	//@todo: withhold pause event until seeking event stops for a bit (debounce)
-	console.log('user paused', e.target);
-	somethingHasStoppedPlaying(e.target);
+	// console.log('user paused', e.target);
+	somethingHasBeenPaused(e.target);
 }, true);
 
 
@@ -99,7 +99,7 @@ actions.pause = function () {
 	for (var i = playingElements.length - 1; i >= 0; i--) {
 		var current = playingElements[i];
 		if (!current.paused) {
-			console.log('automated pausing', current);
+			// console.log('automated pausing', current);
 			current.____automatedEvent = true;
 			current.pause();
 			current._______wasPaused = true;
@@ -111,7 +111,7 @@ actions.resume = function () {
 	for (var i = playingElements.length - 1; i >= 0; i--) {
 		var current = playingElements[i];
 		if (current._______wasPaused) {
-			console.log('automated playing', current);
+			// console.log('automated playing', current);
 			current.____automatedEvent = true;
 			current.play();
 			delete current._______wasPaused;
@@ -121,7 +121,7 @@ actions.resume = function () {
 
 chrome.runtime.onMessage.addListener(function (request) {
 	if(request && request.action && actions[request.action]) {
-		console.log('Got action:', request.action);
+		// console.log('Got action:', request.action);
 		actions[request.action]();
 	}
 });

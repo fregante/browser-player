@@ -1,0 +1,21 @@
+{
+  "manifest_version": 2,
+
+  "name": "Browser Player",
+  "description": "One controller for your internet video and music",
+  "version": "0.1",
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": true
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+            "all_frames": true
+    }
+  ],
+  "permissions": [
+    "tabs", "<all_urls>"
+  ]
+}

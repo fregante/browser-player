@@ -3,7 +3,7 @@
 
   "name": "Browser Player",
   "description": "One controller for your internet video and music",
-  "version": "0.5",
+  "version": "0.5.1",
   "background": {
     "scripts": [
       "init.js",
@@ -17,7 +17,8 @@
     {
       "matches": ["<all_urls>"],
       "js": ["content.js"],
-      "all_frames": true
+      "all_frames": true,
+      "run_at": "document_start"
     }
   ],
   "icons": { "512": "icon.png" },

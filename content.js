@@ -1,4 +1,4 @@
-// console.log('player ready');
+'use strict';
 
 function off (el, name, cb) {
 	el.removeEventListener(name, cb, true);// @warn: true = capturing!!

@@ -11,14 +11,26 @@ tabs.add = function (tab) {
 	tabs.list.push(tab);
 	tabs.onUpdate();
 };
+tabs.has = function (tabId) {
+	return tabs.list.some(function (current) {
+		return current.id === tabId;
+	});
+};
 tabs.remove = function (tabId) {
+	var wasRemoved = false;
 	tabs.list = tabs.list.filter(function (current) {
-		return current.id !== tabId;
+		var shouldRemove = current.id === tabId;
+		if (shouldRemove) {
+			wasRemoved = true;
+		} else {
+			return true;
+		}
 	});
 	if (!tabs.list.length) {
 		tabs.isPlaying = false;
 	}
 	tabs.onUpdate();
+	return wasRemoved;
 };
 tabs.act = function (tab, action) {
 	if (!tab) {

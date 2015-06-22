@@ -6,8 +6,10 @@ function handlePlay (tab) {
 	tabs.add(tab);
 }
 function handlePause (tab) {
-	tabs.remove(tab.id || tab);
-	tabs.last.act('resume');
+	var wasRemoved = tabs.remove(tab.id || tab);
+	if (wasRemoved) {
+		tabs.last.act('resume');
+	}
 }
 
 var tabEvents = {};

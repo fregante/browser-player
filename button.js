@@ -10,10 +10,13 @@ button.update = function () {
 
 	if (!count) {
 		button.setIcon('icon');
+		button.setTitle('Browser Player: Nothing is playing');
 	} else if (tabs.isPlaying){
 		button.setIcon('pause');
+		button.setTitle('Pause media');
 	} else {
 		button.setIcon('play');
+		button.setTitle('Play media');
 	}
 };
 button.setIcon = function (icon) {
@@ -24,13 +27,16 @@ button.setIcon = function (icon) {
 		}
 	});
 };
+button.setTitle = function (text) {
+	chrome.browserAction.setTitle({
+		title: text
+	});
+};
 function handleClick () {
 	if (tabs.isPlaying) {
-		console.log('was Playing')
 		tabs.last.act('pause');
 		button.update();
 	} else if (tabs.list.length) {
-		console.log('should play')
 		tabs.last.act('resume');
 		button.update();
 	}

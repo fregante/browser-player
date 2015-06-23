@@ -12,7 +12,7 @@
       "controller.js",
       "button.js"
     ],
-    "persistent": true
+    "persistent": false
   },
   "content_scripts": [
     {

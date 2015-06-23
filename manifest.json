@@ -6,6 +6,7 @@
   "version": "0.5.1",
   "background": {
     "scripts": [
+      "functions.js",
       "init.js",
       "main.js",
       "controller.js",

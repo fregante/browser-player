@@ -32,6 +32,21 @@ button.setTitle = function (text) {
 		title: text
 	});
 };
+
+button._clickCount = 0;
+button._resetCount = debounce(function () {
+	button._clickCount = 0;
+}, 1000);
+function feedback () {
+	if (tabs.isPlaying) {
+		return;
+	}
+	button._clickCount += 1;
+	if (button._clickCount === 3) {
+		window.alert('That tickles! Nothing is playing, let me sleep. zzz');
+	}
+	button._resetCount();
+}
 function handleClick () {
 	if (tabs.isPlaying) {
 		tabs.last.act('pause');
@@ -39,6 +54,8 @@ function handleClick () {
 	} else if (tabs.list.length) {
 		tabs.last.act('resume');
 		button.update();
+	} else {
+		feedback();
 	}
 }
 chrome.browserAction.onClicked.addListener(handleClick);

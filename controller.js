@@ -11,6 +11,23 @@ function handlePause (tab) {
 		tabs.last.act('resume');
 	}
 }
+function enableAllCurrentTabs () {
+	var scripts = chrome.runtime.getManifest().content_scripts;
+	scripts.forEach(function (script) {
+		chrome.tabs.query({
+			url: script.matches
+		}, function (tabs) {
+			tabs.forEach(function (tab) {
+				script.js.forEach(function (file) {
+					chrome.tabs.executeScript(tab.id, {
+						allFrames: script.all_frames,
+						file: file
+					});
+				});
+			});
+		});
+	});
+}
 
 var tabEvents = {};
 
@@ -32,3 +49,4 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
 });
 chrome.tabs.onRemoved.addListener(handlePause);
 setInterval(tabs.keepUpdated, 3000);
+enableAllCurrentTabs();

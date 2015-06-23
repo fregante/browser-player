@@ -22,6 +22,16 @@ function deleteAllProperties (elements, property) {
 		delete elements[i][property];
 	}
 }
+function notifyOfEvent (name) {
+	try {
+		chrome.extension.sendMessage({
+			event: name,
+		});
+	} catch (e) {
+		// Extension was updated, deactivate this instance
+		deinit();
+	}
+}
 function somethingIsPlaying (media) {
 	if(isAnyElements(playingElements, '_______wasPaused')) {
 		// console.info('some were paused, now the page is fresh')
@@ -30,9 +40,7 @@ function somethingIsPlaying (media) {
 	}
 	if (!playingElements.length) {
 		// console.log('page is playing');
-		chrome.extension.sendMessage({
-			event: 'play',
-		});
+		notifyOfEvent('play');
 	}
 
 	delete media._______wasPaused;
@@ -52,21 +60,19 @@ function somethingHasBeenPaused (media) {
 
 	if (!playingElements.length) {
 		// console.log('page is not playing')
-		chrome.extension.sendMessage({
-			event: 'pause',
-		});
+		notifyOfEvent('pause');
 	}
 }
 
-window.addEventListener('play', noAutomatedEvent(debounce(function (e) {
+var events = {};
+events.play = noAutomatedEvent(debounce(function (e) {
 	// console.log('user played', e.target);
 	somethingIsPlaying(e.target);
-}, 100)), true);
-window.addEventListener('pause', noAutomatedEvent(debounce(function (e) {
+}, 100));
+events.pause = noAutomatedEvent(debounce(function (e) {
 	// console.log('user paused', e.target);
 	somethingHasBeenPaused(e.target);
-}, 100)), true);
-
+}, 100));
 
 
 var actions = {};
@@ -95,9 +101,29 @@ actions.resume = function () {
 	}
 };
 
-chrome.runtime.onMessage.addListener(function (request) {
-	if(request && request.action && actions[request.action]) {
-		// console.log('Got action:', request.action);
-		actions[request.action]();
+function deinit () {
+	window.removeEventListener('play', events.play, true);
+	window.removeEventListener('pause', events.pause, true);
+}
+
+function detectCurrentPlayingMedia () {
+	var media = document.querySelectorAll('video, audio');
+	for (var i = media.length - 1; i >= 0; i--) {
+		if (media[i].paused === false) {
+			somethingIsPlaying(media[i]);
+		}
 	}
-});
+}
+
+function init () {
+	window.addEventListener('play', events.play, true);
+	window.addEventListener('pause', events.pause, true);
+	chrome.runtime.onMessage.addListener(function (request) {
+		if(request && request.action && actions[request.action]) {
+			// console.log('Got action:', request.action);
+			actions[request.action]();
+		}
+	});
+	detectCurrentPlayingMedia();
+}
+init();

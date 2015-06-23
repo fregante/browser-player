@@ -3,7 +3,7 @@
 
   "name": "Browser Player",
   "description": "One controller for your internet video and music",
-  "version": "0.5.2",
+  "version": "0.6.0",
   "background": {
     "scripts": [
       "functions.js",

@@ -31,3 +31,4 @@ chrome.runtime.onMessage.addListener(function (request, sender) {
 	}
 });
 chrome.tabs.onRemoved.addListener(handlePause);
+setInterval(tabs.keepUpdated, 3000);

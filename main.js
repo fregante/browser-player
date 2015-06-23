@@ -52,3 +52,12 @@ tabs.last = {
 		tabs.act(tabs.last.get(), action);
 	}
 };
+tabs.keepUpdated = function () { // some tabs may crash
+	tabs.list.forEach(function (tab) {
+		chrome.tabs.get(tab.id, function (foundTab) {
+			if (chrome.runtime.lastError || !foundTab) { // missing tab
+				tabs.remove(tab.id);
+			}
+		});
+	});
+};

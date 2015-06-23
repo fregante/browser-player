@@ -1,27 +1,15 @@
 'use strict';
-
-function off (el, name, cb) {
-	el.removeEventListener(name, cb, true);// @warn: true = capturing!!
-}
-function on (el, name, cb, once) {
-	if (once) {
-		var oldCb = cb;
-		cb = function () {
-			oldCb.apply(this, arguments);
-			off(el, name, cb);
-		};
-	}
-	el.addEventListener(name, cb, true);// @warn: true = capturing!!
-}
-function once (el, name, cb) {
-	var oldCb = cb;
-	cb = function () {
-		oldCb.apply(this, arguments);
-		off(el, name, cb);
+/* global debounce */
+var playingElements = [];
+function noAutomatedEvent (cb) {
+	return function (e) {
+		if (e.target.____automatedEvent) {
+			delete e.target.____automatedEvent;
+			return;
+		}
+		cb.call(this, e);
 	};
-	on(el, name, cb);
 }
-
 function isAnyElements (elements, property) {
 	for (var i = elements.length - 1; i >= 0; i--) {
 		if (elements[i][property]) {
@@ -34,7 +22,6 @@ function deleteAllProperties (elements, property) {
 		delete elements[i][property];
 	}
 }
-
 function somethingIsPlaying (media) {
 	if(isAnyElements(playingElements, '_______wasPaused')) {
 		// console.info('some were paused, now the page is fresh')
@@ -71,25 +58,14 @@ function somethingHasBeenPaused (media) {
 	}
 }
 
-var playingElements = [];
-window.addEventListener('play', function (e) {
-	if (e.target.____automatedEvent) {
-		delete e.target.____automatedEvent;
-		return;
-	}
+window.addEventListener('play', noAutomatedEvent(debounce(function (e) {
 	// console.log('user played', e.target);
-
 	somethingIsPlaying(e.target);
-}, true);
-window.addEventListener('pause', function (e) {
-	if (e.target.____automatedEvent) {
-		delete e.target.____automatedEvent;
-		return;
-	}
-	//@todo: withhold pause event until seeking event stops for a bit (debounce)
+}, 100)), true);
+window.addEventListener('pause', noAutomatedEvent(debounce(function (e) {
 	// console.log('user paused', e.target);
 	somethingHasBeenPaused(e.target);
-}, true);
+}, 100)), true);
 
 
 

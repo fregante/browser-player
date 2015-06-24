@@ -125,6 +125,7 @@ actions.resume = function () {
 function die () {
 	window.removeEventListener('play', events.all, true);
 	window.removeEventListener('pause', events.all, true);
+	window.removeEventListener('seeking', events.all, true);
 	window.removeEventListener('volumechange', events.all, true);
 }
 
@@ -140,6 +141,7 @@ function detectCurrentPlayingMedia () {
 function init () {
 	window.addEventListener('play', events.all, true);
 	window.addEventListener('pause', events.all, true);
+	window.addEventListener('seeking', events.all, true);
 	window.addEventListener('volumechange', events.all, true);
 	chrome.runtime.onMessage.addListener(function (request) {
 		if(request && request.action && actions[request.action]) {

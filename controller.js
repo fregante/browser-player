@@ -1,5 +1,6 @@
 'use strict';
-/*global tabs*/
+/*global tabs, debounce*/
+
 function handlePlay (tab) {
 	tabs.remove(tab.id); // prevent duplicates and pausing oneself
 	tabs.last.act('pause');
@@ -31,21 +32,37 @@ function enableAllCurrentTabs () {
 	});
 }
 
-var tabEvents = {};
+var media = {};
 
-tabEvents.play = function someTabIsPlaying (request, sender) {
+media.hasQueuedPause = false;
+media.queuePause = debounce(function (tab) {
+	if (media.hasQueuedPause) {
+		console.log('pause');
+		handlePause(tab);
+	}
+}, 1000); // give it time to seek, if the pause is caused by that
+
+media.onplay = function (request, sender) {
+	media.hasQueuedPause = false;
 	console.log('play');
 	handlePlay(sender.tab);
 };
 
-tabEvents.pause = function someTabHasBeenPaused (request, sender) {
-	console.log('pause');
-	handlePause(sender.tab);
+media.onpause = function (request, sender) {
+	console.log('probably paused');
+	media.hasQueuedPause = true;
+	media.queuePause(sender.tab);
 };
+
+media.onseeking = function () {
+	// false alarm! it's just seeking
+	media.hasQueuedPause = false;
+};
+
 chrome.runtime.onMessage.addListener(function (request, sender) {
-	if(request && request.event && tabEvents[request.event]) {
+	if(request && request.event && media['on'+request.event]) {
 		// console.log('Got event:', request.event);
-		tabEvents[request.event](request, sender);
+		media['on'+request.event](request, sender);
 		// console.log('tabs.list:', tabs.list);
 	}
 });

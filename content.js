@@ -1,6 +1,9 @@
 'use strict';
 /* global debounce */
-var localPlaylist = new Set();
+
+/**
+ * TOOLS
+ */
 function noAutomatedEvent (cb) {
 	return function (e) {
 		if (e.target.____automatedEvent) {
@@ -29,10 +32,24 @@ function notifyOfEvent (name) {
 		});
 	} catch (e) {
 		// Extension was updated, deactivate this instance
-		deinit();
+		die();
 	}
 }
-function somethingIsPlaying (media) {
+function hasAudio (video) {
+  return video.mozHasAudio ||
+	  video.webkitAudioDecodedByteCount ||
+	  video.audioTracks && video.audioTracks.length;
+}
+
+
+/**
+ * MEDIA EVENTS
+ */
+
+var localPlaylist = new Set();
+
+var events = {};
+events.play = function (media) {
 	if(isAnyElements(localPlaylist, '_______wasPaused')) {
 		// console.info('some were paused, now the page is fresh')
 		deleteAllProperties(localPlaylist, '_______wasPaused');
@@ -49,17 +66,13 @@ function somethingIsPlaying (media) {
 
 	if (!media._______tracking) {
 		media.addEventListener('DOMNodeRemovedFromDocument', function () {
-			somethingHasBeenPaused(media);
+			events.pause(media);
 		});
 		media._______tracking = true;
 	}
-}
-function hasAudio (video) {
-    return video.mozHasAudio ||
-    video.webkitAudioDecodedByteCount ||
-    video.audioTracks && video.audioTracks.length;
-}
-function somethingHasBeenPaused (media) {
+};
+
+events.pause = function (media) {
 	// console.log(localPlaylist);
 
 	localPlaylist.delete(media);
@@ -68,18 +81,22 @@ function somethingHasBeenPaused (media) {
 		// console.log('page is not playing')
 		notifyOfEvent('pause');
 	}
-}
+};
 
-var onMediaEvent = noAutomatedEvent(debounce(function (e) {
+events.all = noAutomatedEvent(debounce(function (e) {
 	var media = e.target;
 	var isSilent = media.muted || !media.volume || !hasAudio(media);
 	if (isSilent && !media._______wasPaused || e.type === 'pause') {
-		somethingHasBeenPaused(media);
+		events.pause(media);
 	} else if(!isSilent && !media.paused) {
-		somethingIsPlaying(media);
+		events.play(media);
 	}
 }, 100));
 
+
+/**
+ * EXTENSION REQUESTS
+ */
 
 var actions = {};
 
@@ -105,25 +122,25 @@ actions.resume = function () {
 	});
 };
 
-function deinit () {
-	window.removeEventListener('play', onMediaEvent, true);
-	window.removeEventListener('pause', onMediaEvent, true);
-	window.removeEventListener('volumechange', onMediaEvent, true);
+function die () {
+	window.removeEventListener('play', events.all, true);
+	window.removeEventListener('pause', events.all, true);
+	window.removeEventListener('volumechange', events.all, true);
 }
 
 function detectCurrentPlayingMedia () {
 	var media = document.querySelectorAll('video, audio');
 	for (var i = media.length - 1; i >= 0; i--) {
 		if (media[i].paused === false) {
-			somethingIsPlaying(media[i]);
+			events.play(media[i]);
 		}
 	}
 }
 
 function init () {
-	window.addEventListener('play', onMediaEvent, true);
-	window.addEventListener('pause', onMediaEvent, true);
-	window.addEventListener('volumechange', onMediaEvent, true);
+	window.addEventListener('play', events.all, true);
+	window.addEventListener('pause', events.all, true);
+	window.addEventListener('volumechange', events.all, true);
 	chrome.runtime.onMessage.addListener(function (request) {
 		if(request && request.action && actions[request.action]) {
 			// console.log('Got action:', request.action);

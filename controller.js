@@ -22,6 +22,8 @@ function enableAllCurrentTabs () {
 					chrome.tabs.executeScript(tab.id, {
 						allFrames: script.all_frames,
 						file: file
+					}, function (shutUp) {
+						shutUp = chrome.runtime.lastError;
 					});
 				});
 			});

@@ -49,6 +49,13 @@ function somethingIsPlaying (media) {
 	if (playingElements.indexOf(media) === -1) {
 		playingElements.push(media);
 	}
+
+	if (!media._______tracking) {
+		media.addEventListener('DOMNodeRemovedFromDocument', function () {
+			somethingHasBeenPaused(media);
+		});
+		media._______tracking = true;
+	}
 }
 function hasAudio (video) {
     return video.mozHasAudio ||

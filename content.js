@@ -1,6 +1,6 @@
 'use strict';
 /* global debounce */
-var playingElements = [];
+var localPlaylist = new Set();
 function noAutomatedEvent (cb) {
 	return function (e) {
 		if (e.target.____automatedEvent) {
@@ -11,15 +11,15 @@ function noAutomatedEvent (cb) {
 	};
 }
 function isAnyElements (elements, property) {
-	for (var i = elements.length - 1; i >= 0; i--) {
-		if (elements[i][property]) {
+	for(var element of elements) {
+		if (element[property]) {
 			return true;
 		}
 	}
 }
 function deleteAllProperties (elements, property) {
-	for (var i = elements.length - 1; i >= 0; i--) {
-		delete elements[i][property];
+	for(var element of elements) {
+		delete element[property];
 	}
 }
 function notifyOfEvent (name) {
@@ -33,22 +33,19 @@ function notifyOfEvent (name) {
 	}
 }
 function somethingIsPlaying (media) {
-	if(isAnyElements(playingElements, '_______wasPaused')) {
+	if(isAnyElements(localPlaylist, '_______wasPaused')) {
 		// console.info('some were paused, now the page is fresh')
-		deleteAllProperties(playingElements, '_______wasPaused');
-		playingElements.length = 0;
+		deleteAllProperties(localPlaylist, '_______wasPaused');
+		localPlaylist.clear();
 	}
-	if (!playingElements.length) {
+	if (!localPlaylist.size) {
 		// console.log('page is playing');
 		notifyOfEvent('play');
 	}
 
 	delete media._______wasPaused;
 
-	// add only if not already there
-	if (playingElements.indexOf(media) === -1) {
-		playingElements.push(media);
-	}
+	localPlaylist.add(media);
 
 	if (!media._______tracking) {
 		media.addEventListener('DOMNodeRemovedFromDocument', function () {
@@ -63,14 +60,11 @@ function hasAudio (video) {
     video.audioTracks && video.audioTracks.length;
 }
 function somethingHasBeenPaused (media) {
-	// console.log(playingElements);
+	// console.log(localPlaylist);
 
-	var index = playingElements.indexOf(media);
-	if (index > -1) {
-		playingElements.splice(playingElements.indexOf(media), 1);
-	}
+	localPlaylist.delete(media);
 
-	if (!playingElements.length) {
+	if (!localPlaylist.size) {
 		// console.log('page is not playing')
 		notifyOfEvent('pause');
 	}
@@ -90,27 +84,25 @@ var onMediaEvent = noAutomatedEvent(debounce(function (e) {
 var actions = {};
 
 actions.pause = function () {
-	for (var i = playingElements.length - 1; i >= 0; i--) {
-		var current = playingElements[i];
-		if (!current.paused) {
-			// console.log('automated pausing', current);
-			current.____automatedEvent = true;
-			current.pause();
-			current._______wasPaused = true;
+	localPlaylist.forEach(function (media) {
+		if (!media.paused) {
+			// console.log('automated pausing', media);
+			media.____automatedEvent = true;
+			media.pause();
+			media._______wasPaused = true;
 		}
-	}
+	});
 };
 
 actions.resume = function () {
-	for (var i = playingElements.length - 1; i >= 0; i--) {
-		var current = playingElements[i];
-		if (current._______wasPaused) {
-			// console.log('automated playing', current);
-			current.____automatedEvent = true;
-			current.play();
-			delete current._______wasPaused;
+	localPlaylist.forEach(function (media) {
+		if (media._______wasPaused) {
+			// console.log('automated playing', media);
+			media.____automatedEvent = true;
+			media.play();
+			delete media._______wasPaused;
 		}
-	}
+	});
 };
 
 function deinit () {

@@ -50,6 +50,11 @@ function somethingIsPlaying (media) {
 		playingElements.push(media);
 	}
 }
+function hasAudio (video) {
+    return video.mozHasAudio ||
+    video.webkitAudioDecodedByteCount ||
+    video.audioTracks && video.audioTracks.length;
+}
 function somethingHasBeenPaused (media) {
 	// console.log(playingElements);
 
@@ -64,14 +69,14 @@ function somethingHasBeenPaused (media) {
 	}
 }
 
-var events = {};
-events.play = noAutomatedEvent(debounce(function (e) {
-	// console.log('user played', e.target);
-	somethingIsPlaying(e.target);
-}, 100));
-events.pause = noAutomatedEvent(debounce(function (e) {
-	// console.log('user paused', e.target);
-	somethingHasBeenPaused(e.target);
+var onMediaEvent = noAutomatedEvent(debounce(function (e) {
+	var media = e.target;
+	var isSilent = media.muted || !media.volume || !hasAudio(media);
+	if (isSilent && !media._______wasPaused || e.type === 'pause') {
+		somethingHasBeenPaused(media);
+	} else if(!isSilent && !media.paused) {
+		somethingIsPlaying(media);
+	}
 }, 100));
 
 
@@ -102,8 +107,9 @@ actions.resume = function () {
 };
 
 function deinit () {
-	window.removeEventListener('play', events.play, true);
-	window.removeEventListener('pause', events.pause, true);
+	window.removeEventListener('play', onMediaEvent, true);
+	window.removeEventListener('pause', onMediaEvent, true);
+	window.removeEventListener('volumechange', onMediaEvent, true);
 }
 
 function detectCurrentPlayingMedia () {
@@ -116,8 +122,9 @@ function detectCurrentPlayingMedia () {
 }
 
 function init () {
-	window.addEventListener('play', events.play, true);
-	window.addEventListener('pause', events.pause, true);
+	window.addEventListener('play', onMediaEvent, true);
+	window.addEventListener('pause', onMediaEvent, true);
+	window.addEventListener('volumechange', onMediaEvent, true);
 	chrome.runtime.onMessage.addListener(function (request) {
 		if(request && request.action && actions[request.action]) {
 			// console.log('Got action:', request.action);

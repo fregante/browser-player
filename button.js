@@ -4,6 +4,10 @@ var button = {};
 button.update = function () {
 	var count = tabs.list.length;
 	var text = count > 1 ? ''+count : '';
+	var title;
+	if (count) {
+		title = tabs.last.get().title;
+	}
 	chrome.browserAction.setBadgeText({
 		text: text
 	});
@@ -13,10 +17,10 @@ button.update = function () {
 		button.setTitle('Browser Player: Nothing is playing');
 	} else if (tabs.isPlaying){
 		button.setIcon('pause');
-		button.setTitle('Pause media');
+		button.setTitle('Pause: '+tabs.last.get().title);
 	} else {
 		button.setIcon('play');
-		button.setTitle('Play media');
+		button.setTitle('Play: '+tabs.last.get().title);
 	}
 };
 button.setIcon = function (icon) {

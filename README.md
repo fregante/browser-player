@@ -1,3 +1,5 @@
+Note: the [Chrome Media Keys extension](https://github.com/msfeldstein/chrome-media-keys) is further along in development, even though it behaves a bit differently from this one.
+
 # Browser Player, a Chrome extension
 Control your playback from a button and automatically pause other tabs when you play something else.
 

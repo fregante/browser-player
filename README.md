@@ -1,5 +1,3 @@
-Note: the [Chrome Media Keys extension](https://github.com/msfeldstein/chrome-media-keys) is further along in development, even though it behaves a bit differently from this one. [BeardedSpice](https://github.com/beardedspice/beardedspice) might be even better as a OS X media keys companion to Browser Player
-
 # Browser Player, a Chrome extension
 Control your playback from a button and automatically pause other tabs when you play something else.
 
@@ -54,6 +52,12 @@ To test it out,
 0. Click on the new button to play/pause the video
 
 0. Close any of the three tabs, in any order
+
+## Related
+
+- The [Chrome Media Keys extension](https://github.com/msfeldstein/chrome-media-keys) is further along in development and offers keyboard access, but that replaces iTunes keys altogether, even when no media is playing.
+- [BeardedSpice](https://github.com/beardedspice/beardedspice) also enables the keyboard media keys on OS X but sometimes it doesn't work correctly and [breaks the normal usage of the keys.](https://github.com/beardedspice/beardedspice/issues/267)
+
 
 ## More
 

@@ -89,8 +89,14 @@ events.seeking = function () {
 
 events.all = noAutomatedEvent(debounce(function (e) {
 	var media = e.target;
-	var isSilent = media.muted || !media.volume || !hasAudio(media);
-	if (isSilent && !media._______wasPaused || e.type === 'pause') {
+
+	if (media._______isUntracked || !hasAudio(media)) {
+		media._______isUntracked = true;
+		return;
+	}
+
+	var isSilent = media.muted || !media.volume;
+
 	if (e.type === 'seeking') {
 		events.seeking();
 	} else if (isSilent && !media._______wasPaused || e.type === 'pause') {

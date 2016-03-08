@@ -83,10 +83,17 @@ events.pause = function (media) {
 	}
 };
 
+events.seeking = function () {
+	notifyOfEvent('seeking');
+};
+
 events.all = noAutomatedEvent(debounce(function (e) {
 	var media = e.target;
 	var isSilent = media.muted || !media.volume || !hasAudio(media);
 	if (isSilent && !media._______wasPaused || e.type === 'pause') {
+	if (e.type === 'seeking') {
+		events.seeking();
+	} else if (isSilent && !media._______wasPaused || e.type === 'pause') {
 		events.pause(media);
 	} else if(!isSilent && !media.paused) {
 		events.play(media);
